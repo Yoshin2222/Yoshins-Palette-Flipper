@@ -1,42 +1,43 @@
-import os
-import time
-flip = "_Flipped"
-act = ".act"
-title = "YOSHINS PALMOD/TM PAL FLIPPER"
-print(title)
-pal_len = 0x30
 
-print("ENTER THE NAME OF THE PALLETE YOU'D LIKE TO FLIP")
-name = input("NAME = ")
-actname = name + ".act"
-while not os.path.exists(actname):
-    print("INVALID FILENAME! INPUT SOMETHING ELSE")
-    name = input("NAME = ")
-    actname = name + ".act"
+def main():
+    import os
+    flip = "_Flipped"
+    act = ".act"
+    print("YOSHINS PALMOD/TM PAL FLIPPER")
+    pal_length = 0x30
 
-print("Now flipping file...")
-time.sleep(1)
-flipname = name+flip+act
-#Begin flipping
-with open(actname, "rb") as input:
-    size = os.path.getsize(actname)
-    print("Size = ", hex(size))
-    temp = []
-    temp2 = []
-    off = 3
-    temp = input.read(size) #Make a copy of the file we can mess with]
-#    print(temp)
-    for i in range(0, size, pal_len):
-    #Put last color in palette first
-        trans_start = i + pal_len - off
-#        temp2 += temp[trans_start:trans_start+off]
-        temp2 += temp[i+off:off+trans_start]
-    #Grab the rest of the palette
-#        temp2 += temp[i:trans_start]
-        temp2 += temp[i:i+off]
-#Write the flipped data to a new file
-with open(flipname, "wb") as out:
-#    print(temp2)
-    out.write(bytes(temp2))
+    while 1:
+        print("ENTER THE NAME OF THE PALLETE YOU'D LIKE TO FLIP")
+        name = input("NAME = ")
+        actname = name + act
+        while not os.path.exists(actname):
+            print("INVALID FILENAME! INPUT SOMETHING ELSE")
+            name = input("NAME = ")
+            actname = name + act
 
+        flipname = name+flip+act
+        print("Now flipping file {}...".format(flipname))
+        #Begin flipping
+        with open(actname, "rb") as inp:
+            temp,temp2 = inp.read(),[] #Make a copy of the file we can mess with]
+        size = len(temp)
+        for x in range(0,size,pal_length):
+            #Append the rest of the data to the end
+            if x + pal_length >= size:
+                for i in range(len(temp2),size,1):
+                    temp2.append(temp[i])
+                break
+            #Append the rest of the palette data
+            for i in range(3,pal_length,1):
+                temp2.append(temp[x+i])
+            #Append the first colour first
+            for i in range(0,3,1):
+                temp2.append(temp[x+i])
+
+        with open(flipname, "wb") as out:
+            out.write(bytes(temp2))
+
+
+if __name__ == "__main__":
+    main()
 
